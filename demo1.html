@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carousel</title>
+  <title>Carousel优化</title>
   <style>
     .container {
       max-width: 800px;
@@ -145,49 +145,87 @@
         <li></li>
         <li></li>
       </ul>
-
+    </div>
+    <h2>Carousel</h2>
+    <div class="carousel">
+      <div class="panels">
+        <a class="active" href="#0">11</a>
+        <a href="#1">22</a>
+        <a href="#2">33</a>
+        <a href="#3">44</a>
       </div>
+      <div class="arrows">
+        <button class="arrow arrow-pre"></button>
+        <button class="arrow arrow-next"></button>
+      </div>
+      <ul class="indicators">
+        <li class="active"></li>
+        <li></li>
+        <li></li>
+        <li></li>
+      </ul>
     </div>
   </div>
+
   
   <script>
-    const $ = s => document.querySelector(s)
-    const $$ = s => document.querySelectorAll(s)
 
-    const $pre = $('.carousel .arrow-pre')
-    const $next = $('.carousel .arrow-next')
-    const $$indicators = $$('.carousel .indicators > li')
-    const $$panels = $$('.carousel .panels > a')
+    class Carousel {
+      constructor($root) {
+        this.$root = $root
+        this.$pre = $root.querySelector('.arrow-pre')         
+        this.$next = $root.querySelector('.arrow-next')
+        this.$$indicators = $root.querySelectorAll('.indicators > li')
+        this.$$panels = $root.querySelectorAll('.panels > a')
+
+        this.bind()
+
+      }
+
+      bind() {
+        this.$pre.onclick = () => { 
+          //箭头函数的this代表当前元素$pre，不代表当前轮播对象carousel
+          let index = this.getPreIndex()
+          this.setPage(index)
+          this.setIndicator(index)
+        }
+        this.$next.onclick = () => {
+          let index = this.getNextIndex()
+          this.setPage(index)
+          this.setIndicator(index)
+        }
+        this.$$indicators.forEach($indicator => $indicator.onclick = (e) => {
+          let index = [...this.$$indicators].indexOf(e.target)
+          this.setIndicator(index)
+          this.setPage(index)
+        })
+      }
 
 
-    const getIndex = () => [...$$indicators].indexOf($('.carousel .indicators .active'))
-    const getPreIndex = () => (getIndex() - 1 + $$indicators.length) % $$indicators.length
-    const getNextIndex = () => (getIndex() + 1) % $$indicators.length
+        getIndex() {
+          return [...this.$$indicators].indexOf(this.$root.querySelector('.indicators .active')) 
+        }
+        getPreIndex() {
+          return (this.getIndex() - 1 + this.$$indicators.length) % this.$$indicators.length
+        }
+        getNextIndex() {
+          return (this.getIndex() + 1) % this.$$indicators.length
+        }
+        setPage(index) {
+          this.$$panels.forEach($panel => $panel.classList.remove('active'))
+          this.$$panels[index].classList.add('active')
+        }
+        setIndicator(index) {
+          this.$$indicators.forEach($indicator => $indicator.classList.remove('active'))
+          this.$$indicators[index].classList.add('active')
+        }
 
-    const setPage = index => {
-      $$panels.forEach($panel => $panel.classList.remove('active'))
-      $$panels[index].classList.add('active')
     }
-    const setIndicator = index => {
-      $$indicators.forEach($indicator => $indicator.classList.remove('active'))
-      $$indicators[index].classList.add('active')
-    }
 
-    $pre.onclick = function() {
-      let index = getPreIndex()
-      setPage(index)
-      setIndicator(index)
-    }
-    $next.onclick = function() {
-      let index = getNextIndex()
-      setPage(index)
-      setIndicator(index)
-    }
-    $$indicators.forEach($indicator => $indicator.onclick = function(e) {
-      let index = [...$$indicators].indexOf(e.target)
-      setIndicator(index)
-      setPage(index)
-    })
+
+    let $$carousel = document.querySelectorAll('.carousel')
+    $$carousel.forEach($root => new Carousel($root))
+
 
   </script>
 </body>
